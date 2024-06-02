@@ -17,8 +17,8 @@ class AutomatoNFA:
         next_states = set()
         for state in self.current_states:
             for transition in self.transitions['transitions']:
-                if transition['from'] == state and (transition['read'] == char or transition['read'] is None):
-                    next_states.add(transition['to'])
+                if transition['from'] == str(state) and (transition['read'] == char or transition['read'] is None):
+                    next_states.add(int(transition['to']))
         self.current_states = next_states
 
 def automata_file(file_path):
