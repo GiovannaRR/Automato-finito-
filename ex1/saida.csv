@@ -1,0 +1,6 @@
+Palavra de entrada;Resultado esperado;Resultado obtido;Tempo
+aaaabbbbbaaaaa;1;0;0.00003
+abababab;0;0;0.00001
+bbbbbbbb;0;0;0.00003
+aaaaaaaaaaaa;0;0;0.00001
+aaaaabaaaaa;1;0;0.00001
