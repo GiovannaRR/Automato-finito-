@@ -1,107 +1,93 @@
-﻿# Automato-finito
- import json
-import csv
+# Autômato Finito Não Determinístico (NFA)
+
+Este projeto implementa uma classe `NFA` em Python que simula um **Autômato Finito Não Determinístico (NFA)**, utilizado para processar cadeias de entrada e verificar se pertencem à linguagem definida pelo autômato.
+
+## Funcionalidades
+
+- **Carregar Autômatos a partir de Arquivos JSON**: Define estados e transições do autômato.
+- **Ler Casos de Teste de Arquivos CSV**: Contém as cadeias de entrada e seus respectivos resultados esperados.
+- **Processar Entradas**: Verifica se as cadeias de entrada são aceitas ou rejeitadas com base no autômato carregado.
+- **Medir o Tempo de Execução**: Exibe o tempo de execução para cada análise.
+
+## Sobre o Projeto
+
+Este projeto permite carregar um autômato de um arquivo JSON e testar várias cadeias de entrada definidas em um arquivo CSV. O autômato processa cada entrada e retorna o resultado da aceitação, além de exibir o tempo de execução da análise.
+
+## Arquivos Utilizados
+
+O projeto depende de dois arquivos principais para funcionar corretamente:
+
+1. **`ex1.json`**: Este arquivo define os estados e as transições do autômato. Ele descreve o autômato em termos dos estados e transições entre eles. Um exemplo de conteúdo deste arquivo seria o seguinte:
+
+    ```json
+    {
+      "estados_iniciais": ["q0"],
+      "estados_finais": ["q3"],
+      "transicoes": {
+        "q0": {"a": ["q0", "q1"], "b": ["q0"]},
+        "q1": {"a": ["q2"], "b": ["q0"]},
+        "q2": {"a": ["q2"], "b": ["q3"]},
+        "q3": {}
+      }
+    }
+    ```
+
+2. **`ex1_input.csv`**: Este arquivo contém as cadeias de entrada que serão processadas pelo autômato, juntamente com os resultados esperados (1 para aceitação e 0 para rejeição). Um exemplo de conteúdo deste arquivo seria o seguinte:
+
+    ```csv
+    aaaabbbbbaaaaa,1
+    abababab,0
+    bbbbbbbb,0
+    aaaaaaaaaaaa,0
+    aaaaabaaaaa,1
+    ```
+
+# Exemplo de Uso
+
+```python
 import time
+import json
+import csv
 
-class AutomatoNFA:
-    def __init__(self, transitions):
-        self.transitions = transitions
-        self.current_states = set()
+# Carregar o autômato do arquivo JSON
+with open("ex1.json", "r") as f:
+    nfa_data = json.load(f)
 
-    def operation(self, input_str):
-        Inicializa o conjunto de estados atuais com o estado inicial (0)
-        self.current_states = set([0])
-        Processa cada caractere da entrada
-        for char in input_str:
-            self.step(char)  #Atualiza os estados atuais com base na transição para o caractere
-        Verifica se algum dos estados atuais é um estado final
-        return 1 if any(state in self.transitions['final'] for state in self.current_states) else 0
+nfa = NFA(nfa_data)
 
-    def step(self, char):
-        next_states = set()
-        Para cada estado atual, encontra as próximas transições possíveis para o caractere
-        for state in self.current_states:
-            for transition in self.transitions['transitions']:
-                Verifica se a transição é válida para o estado atual e o caractere atual
-                if transition['from'] == str(state) and (transition['read'] == char or transition['read'] is None):
-                    next_states.add(int(transition['to']))  # Adiciona o próximo estado
-        self.current_states = next_states  # Atualiza o conjunto de estados atuais
+# Processar os casos de teste a partir do arquivo CSV
+with open("ex1_input.csv", "r") as f:
+    reader = csv.reader(f)
+    for row in reader:
+        entrada, resultado_esperado = row
+        start_time = time.time()
+        
+        # Verificar se a entrada é aceita pelo autômato
+        resultado_obtido = nfa.processar(entrada)
+        
+        end_time = time.time()
+        tempo_execucao = end_time - start_time
+        
+        print(f"Entrada: {entrada} - Resultado obtido: {resultado_obtido} - Tempo de execução: {tempo_execucao:.5f} segundos")
+```
 
-def automata_file(file_path):
-    try:
-        Lê o arquivo JSON e retorna os dados do autômato
-        with open(file_path, 'r') as json_file:
-            automaton_data = json.load(json_file)
-        return automaton_data
-    except FileNotFoundError:
-        print(f"Arquivo {file_path} não encontrado.")
-        return None
-    except json.JSONDecodeError:
-        print(f"Erro ao decodificar o arquivo JSON {file_path}. Verifique o formato.")
-        return None
+# Estrutura do Projeto
 
-def cases(file_path):
-    test_cases = []
-    try:
-        Lê o arquivo CSV e extrai os casos de teste
-        with open(file_path, 'r', newline='') as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=';')
-            next(csv_reader)  # Ignora o cabeçalho
-            for row in csv_reader:
-                input_str = row[0]  # Entrada do caso de teste
-                expected_result = int(row[1])  # Resultado esperado
-                test_cases.append((input_str, expected_result))  # Adiciona o caso de teste à lista
-        return test_cases
-    except FileNotFoundError:
-        print(f"Arquivo {file_path} não encontrado.")
-        return []
-    except csv.Error:
-        print(f"Erro ao ler o arquivo CSV {file_path}. Verifique o formato.")
-        return []
+- Carregar o Autômato: O autômato é carregado de um arquivo JSON que define os estados iniciais, finais e as transições.
+- Carregar os Casos de Teste: Os casos de teste são carregados de um arquivo CSV contendo cadeias de entrada e seus respectivos resultados esperados.
+- Processar as Entradas: O autômato verifica se as entradas são aceitas ou rejeitadas.
+- Exibir os Resultados: Para cada entrada, o programa exibe a entrada, o resultado obtido e o tempo de execução.
 
-def main():
-    Caminhos dos arquivos de entrada
-    file_aut_path = 'ex1/ex1.json'  # Arquivo JSON com a definição do autômato
-    file_teste_path = 'ex1/ex1_input.csv'  # Arquivo CSV com os casos de teste
+# Exemplo de Saída do Programa
 
-    Cria uma instância do autômato com base no arquivo JSON
-    automata = AutomatoNFA(automata_file(file_aut_path))
-    Obtém os casos de teste do arquivo CSV
-    case_test = cases(file_teste_path)
+```python
+    Entrada: aaaabbbbbaaaaa - Resultado obtido: 1 - Tempo de execução: 0.00006 segundos
+    Entrada: abababab - Resultado obtido: 0 - Tempo de execução: 0.00003 segundos
+    Entrada: bbbbbbbb - Resultado obtido: 0 - Tempo de execução: 0.00003 segundos
+    Entrada: aaaaaaaaaaaa - Resultado obtido: 0 - Tempo de execução: 0.00004 segundos
+    Entrada: aaaaabaaaaa - Resultado obtido: 1 - Tempo de execução: 0.00005 segundos
+```
+# Problemas Conhecidos
 
-    Para cada caso de teste, executa o autômato e mede o tempo de execução
-    for str_in_input, expected_result in case_test:
-        start_time = time.perf_counter()  # Marca o início da execução
-        result = automata.operation(str_in_input)  # Executa o autômato com a entrada atual
-        end_time = time.perf_counter()  # Marca o final da execução
-
-        execution_time = "{:.5f}".format(end_time - start_time)  # Calcula o tempo de execução
-        Imprime o resultado do teste, o tempo de execução e a entrada
-        print(f"Entrada: {str_in_input} - Resultado obtido: {result} - Tempo de execução: {execution_time} segundos")
-
-if __name__ == "__main__":
-    main()
-
-
-Em um teste as entradas foram:
-
-ba;1
-aaaabbbbbaaaaa;1
-abababab;0
-bbbbbbbb;0
-aaaaaaaaaaaa;0
-aaaaabaaaaa;1
-
-As saidas esperadas são representadas po 1 e 0
-
-as saidas obtidas foram:
-obs: as saidas estão com bugs!!
-
-Entrada: aaaabbbbbaaaaa - Resultado obtido: 1 - Tempo de execução: 0.00006 segundos
-Entrada: abababab - Resultado obtido: 0 - Tempo de execução: 0.00003 segundos
-Entrada: bbbbbbbb - Resultado obtido: 0 - Tempo de execução: 0.00003 segundos
-Entrada: aaaaaaaaaaaa - Resultado obtido: 0 - Tempo de execução: 0.00004 segundos
-Entrada: aaaaabaaaaa - Resultado obtido: 1 - Tempo de execução: 0.00005 segundos
-
-
-
+- Bugs nas Transições e Estados: O programa pode não lidar corretamente com alguns estados e transições, causando falhas na análise de cadeias.
+- Melhorias Necessárias: A revisão das transições e estados iniciais pode corrigir alguns problemas conhecidos.
